@@ -1,63 +1,85 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-
 const Home = () => {
   const [ideas, setIdeas] = useState("");
   const [category, setCategory] = useState("AI SaaS");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const apiKey = process.env.VITE_OPENROUTER_API_KEY;
-  if (!apiKey) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-100 text-red-800 p-4 rounded-lg
-        ">
-          <p className="font-semibold">API Key is missing. Please set it in your
-          <code className="font-mono bg-gray-200 p-1 rounded">.env</code> file.</p>
-        </div>
-      </div>
-    );
-  }
+  // Add your OpenRouter API key here
+  // For Vite projects, use VITE_ prefix
+  const apiKey = import.meta.env?.VITE_OPENROUTER_API_KEY;
+  
+  // If you're using Create React App instead of Vite, uncomment the line below:
+  // const apiKey = window.REACT_APP_OPENROUTER_API_KEY;
+  
+  // Temporary solution for testing (replace with your actual API key):
+  // const apiKey = "your_api_key_here";
 
   const handleGenerate = async () => {
-    setLoading(true);
-    setResult(" ");
+    if (!ideas.trim()) {
+      alert("Please enter an idea first!");
+      return;
+    }
 
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "openai/gpt-3.5-turbo",
-        messages: [
-          {
-            role: "user",
-            content: `Write a clean and responsive HTML page for a ${category} based on the idea: "${ideas}".
-            The page should include:
-            - A bold heading
-            - A main section with a brief description
-            - Three feature card
-            - A call-to-action button
-            Use plain HTML and TailwindCSS. Return ONLY valid HTML . `,
-          },
-        ],
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+    if (!apiKey) {
+      alert("API key not found. Please check your .env file.");
+      return;
+    }
+
+    setLoading(true);
+    setResult("");
+
+    try {
+      const response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: "openai/gpt-3.5-turbo",
+          messages: [
+            {
+              role: "user",
+              content: `Write a clean and responsive HTML page for a ${category} based on the idea: "${ideas}".
+              The page should include:
+              - A bold heading
+              - A main section with a brief description
+              - Three feature cards
+              - A call-to-action button
+              Use plain HTML and TailwindCSS. Return ONLY valid HTML without any markdown formatting or code blocks.`,
+            },
+          ],
+          max_tokens: 2000,
+          temperature: 0.7,
         },
-      }
-    );
-    setResult(response.data.choices[0].message.content);
-    setLoading(false);
+        {
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": window.location.origin, // Optional but recommended
+            "X-Title": "WebCopilot AI", // Optional
+          },
+        }
+      );
+      
+      setResult(response.data.choices[0].message.content);
+    } catch (error) {
+      console.error("Error generating content:", error);
+      alert("Failed to generate content. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyCode = () => {
+    if (!result) {
+      alert("No code to copy!");
+      return;
+    }
+
     navigator.clipboard
       .writeText(result)
       .then(() => {
-        alert("code copied!");
+        alert("Code copied to clipboard!");
       })
       .catch((err) => {
         console.error("Failed to copy code: ", err);
@@ -68,57 +90,78 @@ const Home = () => {
   return (
     <div>
       <div className="min-h-screen bg-purple-50 font-poppins px-5 py-15">
-        <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-2xl p-8">
+        <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8">
           <h1 className="text-4xl text-center font-bold text-purple-700 mb-6">
             WebCopilot AI
           </h1>
 
-          <input
-            type="text"
-            value={ideas}
-            onChange={(e) => setIdeas(e.target.value)}
-            placeholder="Enter your idea here..."
-            className="w-full border border-gray-200 p-3 rounded-lg m"
-          />
+          <div className="space-y-4">
+            <input
+              type="text"
+              value={ideas}
+              onChange={(e) => setIdeas(e.target.value)}
+              placeholder="Enter your idea here... (e.g., AI-powered task manager)"
+              className="w-full border border-gray-200 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
 
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full border border-gray-200 p-3 rounded-lg mt-4"
-          >
-            <option value="AI SaaS">AI SaaS</option>
-            <option value="Productivity Tool">Productivity Tool</option>
-            <option value="Startup">Startup</option>
-          </select>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="AI SaaS">AI SaaS</option>
+              <option value="Productivity Tool">Productivity Tool</option>
+              <option value="Startup">Startup</option>
+              <option value="E-commerce">E-commerce</option>
+              <option value="Social Media">Social Media</option>
+              <option value="Healthcare">Healthcare</option>
+            </select>
 
-          <button
-            className="w-full bg-purple-700 text-white font-semibold py-3 rounded-lg mt-4 hover:bg-purple-800"
-            onClick={handleGenerate}
-          >
-            {loading ? "Generating..." : "Generate"}
-          </button>
+            <button
+              className="w-full bg-purple-700 text-white font-semibold py-3 rounded-lg hover:bg-purple-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              onClick={handleGenerate}
+              disabled={loading}
+            >
+              {loading ? "Generating..." : "Generate Landing Page"}
+            </button>
+          </div>
 
           {result && (
-            <div className="mt-10 p-4 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
-              <div
-                className=" q2 p-5 rounded-lg mb-2"
-                dangerouslySetInnerHTML={{
-                  __html: result,
-                }}
-              />
+            <div className="mt-10">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-800">Live Preview</h2>
+              
+              {/* Preview Container */}
+              <div className="border border-gray-300 rounded-lg mb-6 overflow-hidden">
+                <div className="bg-gray-100 px-4 py-2 border-b">
+                  <span className="text-sm text-gray-600">Preview</span>
+                </div>
+                <div
+                  className="p-5 bg-white min-h-96 overflow-auto"
+                  dangerouslySetInnerHTML={{
+                    __html: result,
+                  }}
+                />
+              </div>
 
+              {/* Code Section */}
               <div className="mt-6">
-                <h2 className="text-xl font-semibold mb-2">HTML Code:</h2>
-                <button
-                  className=" bg-gray-800 text-white font-semibold px-3 py-2 rounded-lg mt-2 hover:bg-gray-900"
-                  onClick={copyCode}
-                >
-                  Copy Code
-                </button>
-                <pre className="mt-6 bg-gray-100 p-4 rounded-lg overflow-x-auto">
-                  <code className="text-sm">{result}</code>
-                </pre>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-gray-800">HTML Code</h2>
+                  <button
+                    className="bg-gray-800 text-white font-semibold px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors"
+                    onClick={copyCode}
+                  >
+                    Copy Code
+                  </button>
+                </div>
+                
+                <div className="bg-gray-900 rounded-lg overflow-hidden">
+                  <pre className="p-4 overflow-x-auto text-sm">
+                    <code className="text-green-500 whitespace-pre-wrap break-words">
+                      {result}
+                    </code>
+                  </pre>
+                </div>
               </div>
             </div>
           )}
