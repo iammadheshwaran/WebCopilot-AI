@@ -1,15 +1,29 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+
 const Home = () => {
   const [ideas, setIdeas] = useState("");
   const [category, setCategory] = useState("AI SaaS");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const apiKey = process.env.VITE_OPENROUTER_API_KEY;
+  if (!apiKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-red-100 text-red-800 p-4 rounded-lg
+        ">
+          <p className="font-semibold">API Key is missing. Please set it in your
+          <code className="font-mono bg-gray-200 p-1 rounded">.env</code> file.</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleGenerate = async () => {
     setLoading(true);
-    setResult("");
+    setResult(" ");
 
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -30,9 +44,8 @@ const Home = () => {
       },
       {
         headers: {
-          Authorization: `Bearer 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`,
+          "Authorization": `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:5173/",
         },
       }
     );
@@ -89,7 +102,7 @@ const Home = () => {
             <div className="mt-10 p-4 rounded-lg">
               <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
               <div
-                className="border p-5 rounded-lg mb-2"
+                className=" q2 p-5 rounded-lg mb-2"
                 dangerouslySetInnerHTML={{
                   __html: result,
                 }}
