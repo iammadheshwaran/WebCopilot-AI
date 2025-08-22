@@ -8,7 +8,6 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
 
   // Api key from environment variables
-  
   const apiKey = import.meta.env?.VITE_OPENROUTER_API_KEY;
 
 
@@ -117,7 +116,7 @@ const Home = () => {
               onClick={handleGenerate}
               disabled={loading}
             >
-              {loading ? "Generating..." : "Generate Landing Page"}
+              {loading ? "Generating..." : "Generate"}
             </button>
           </div>
 
