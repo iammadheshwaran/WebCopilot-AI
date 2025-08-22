@@ -7,15 +7,10 @@ const Home = () => {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Add your OpenRouter API key here
-  // For Vite projects, use VITE_ prefix
+  // Api key from environment variables
+  
   const apiKey = import.meta.env?.VITE_OPENROUTER_API_KEY;
-  
-  // If you're using Create React App instead of Vite, uncomment the line below:
-  // const apiKey = window.REACT_APP_OPENROUTER_API_KEY;
-  
-  // Temporary solution for testing (replace with your actual API key):
-  // const apiKey = "your_api_key_here";
+
 
   const handleGenerate = async () => {
     if (!ideas.trim()) {
@@ -56,7 +51,7 @@ const Home = () => {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
             "HTTP-Referer": window.location.origin, // Optional but recommended
-            "X-Title": "WebCopilot AI", // Optional
+            "X-Title": "WebCopilot AI", 
           },
         }
       );
