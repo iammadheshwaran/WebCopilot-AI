@@ -5,7 +5,7 @@ const App = () => {
 
   return (
     <>
-    <div className="min-h-screen">
+    <div className="min-h-screen ">
       <Home />
     </div>
     </>
